@@ -13,10 +13,13 @@ namespace gxt_workspace
     public partial class Form1 : Form
     {
         KeyboardHook kbh;
+        Movement mvt;
         public Form1()
         {
             InitializeComponent();
             kbh = new KeyboardHook();
+            mvt = new Movement();
+            mvt.Test();
             // register the event that is fired after the key press.
             kbh.KeyPressed +=
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
