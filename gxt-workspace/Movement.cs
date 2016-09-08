@@ -12,21 +12,38 @@ namespace gxt_workspace
     // http://www.pinvoke.net/default.aspx/user32/EnumWindows.html
     public class Movement
     {
-        public delegate bool CallBackPtr(IntPtr hwnd, int lParam);
+        public Movement(ListBox debug)
+        {
+            this.debug = debug;
+        }
+        private ListBox debug { get; set; }
+        //public delegate bool CallBackPtr(IntPtr hWnd, int lParam);
+        public delegate bool CallBackPtr(IntPtr hWnd, ref ReportData data);
         private CallBackPtr callBackPtr;
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int EnumWindows(CallBackPtr callPtr, int lPar);
+        [DllImport("user32.Dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(CallBackPtr callPtr, /*[MarshalAsAttribute(UnmanagedType.Struct)]*/ ref ReportData data);
+
+        public class ReportData
+        {
+            // You can put any dicks or Doms in here...
+            public MovementDirection md;
+            public ListBox debug;
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, uint wFlags);
 
-        public static bool Report(IntPtr hWnd, int lParam)
+        public static bool Report(IntPtr hWnd, ref ReportData data)
         {
             Rectangle rectangle;
-            MovementDirection md = (MovementDirection)lParam;
+            MovementDirection md = (MovementDirection)data.md;
             var visible = IsWindowVisible(hWnd);
             if (visible)
             {
@@ -47,6 +64,7 @@ namespace gxt_workspace
                     uint pid;
                     GetWindowThreadProcessId(hWnd, out pid);
                     //MessageBox.Show("Visible Control Window handle is " + hWnd + " at " + rectangle.ToString() + " of pid " + pid);
+                    data.debug.Items.Add("hWnd:" + hWnd + ", rectangle:" + rectangle.ToString() + ", pid:" + pid);
                     int dLeft = 0, dTop = 0;
                     switch (md)
                     {
@@ -71,12 +89,14 @@ namespace gxt_workspace
 
         public void Move(MovementDirection md)
         {
-
             // note in other situations, it is important to keep 
             // callBackPtr as a member variable so it doesnt GC while you're calling EnumWindows
 
             callBackPtr = new CallBackPtr(Movement.Report);
-            Movement.EnumWindows(callBackPtr, (int) md);
+            var data = new ReportData();
+            data.md = md;
+            data.debug = debug;
+            Movement.EnumWindows(callBackPtr, ref data);
         }
 
         [Flags]

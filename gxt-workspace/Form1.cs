@@ -17,7 +17,7 @@ namespace gxt_workspace
         public Form1()
         {
             InitializeComponent();
-            mvt = new Movement();
+            mvt = new Movement(listBox1);
             kbhs = new List<KeyboardHook>();
             // mv left
             kbhs.Add(new KeyboardHook());
@@ -47,7 +47,7 @@ namespace gxt_workspace
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
             // show the keys pressed in a label.
-            //MessageBox.Show(e.Modifier.ToString() + " + " + e.Key.ToString());
+            listBox1.Items.Add(e.Modifier.ToString() + " + " + e.Key.ToString());
             switch (e.Key)
             {
                 case Keys.Left:
@@ -63,11 +63,6 @@ namespace gxt_workspace
                     mvt.Move(Movement.MovementDirection.Down);
                     break;
             }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            mvt.Move(Movement.MovementDirection.Left);
         }
     }
 }
